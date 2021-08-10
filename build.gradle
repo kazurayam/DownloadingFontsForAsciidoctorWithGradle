@@ -1,0 +1,37 @@
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+
+def downloadAndUnzip = { String remoteUrl, String dirName,
+                         Path baseDir = Paths.get('src/docs/asciidoc/@font') ->
+    Path outDir = baseDir.resolve(dirName)
+    if (Files.exists(outDir)) {
+        // delete the directory to clear out previous processing result
+        Files.walk(outDir)
+                .sorted(Comparator.reverseOrder())
+                .map({ p -> p.toFile()})
+                .forEach({ f -> f.delete()})
+    }
+    Files.createDirectories(outDir)
+    assert Files.exists(outDir)
+    Path zip = outDir.resolve(dirName + ".zip")
+    zip.toFile().withOutputStream { out ->
+        new URL(remoteUrl).withInputStream { from ->
+            out << from
+        }
+    }
+    println "downloaded ${remoteUrl} into ${outDir} directory as ${zip.getFileName()}"
+}
+
+task importFonts {
+    doLast {
+        /*
+        downloadAndUnzip("https://osdn.jp/downloads/users/8/8637/genshingothic-20150607.zip",
+                "genshin")
+        downloadAndUnzip("https://github.com/ButTaiwan/genyo-font/releases/download/v1.501/GenYoMin.zip",
+                "genyo-font")
+         */
+        downloadAndUnzip("https://github.com/edihbrandon/RictyDiminished/archive/refs/tags/3.2.3.zip",
+                "RictyDiminished")
+    }
+}
